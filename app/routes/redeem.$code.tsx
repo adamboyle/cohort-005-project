@@ -12,7 +12,8 @@ import { Ticket, AlertCircle, CheckCircle2, Globe } from "lucide-react";
 import { data } from "react-router";
 import { db } from "~/db";
 import { purchases, coupons, courses, enrollments } from "~/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { enroll, isEnrolled } from "~/lib/enrollment.server";
 
 function getCourseById(id: number) {
   return db.select().from(courses).where(eq(courses.id, id)).get();
@@ -22,17 +23,7 @@ function getCouponByCode(code: string) {
   return db.select().from(coupons).where(eq(coupons.code, code)).get();
 }
 
-function isUserEnrolled(userId: number, courseId: number) {
-  const existing = db
-    .select()
-    .from(enrollments)
-    .where(
-      and(eq(enrollments.userId, userId), eq(enrollments.courseId, courseId))
-    )
-    .get();
-
-  return !!existing;
-}
+const isUserEnrolled = isEnrolled;
 
 type RedeemResult =
   | { ok: true; enrollment: typeof enrollments.$inferSelect }
@@ -52,18 +43,14 @@ function redeemCoupon(
     return { ok: false, error: "Coupon has already been redeemed" };
   }
 
-  const existingEnrollment = db
-    .select()
-    .from(enrollments)
-    .where(
-      and(
-        eq(enrollments.userId, userId),
-        eq(enrollments.courseId, coupon.courseId)
-      )
-    )
-    .get();
+  if (coupon.voidedAt !== null) {
+    return {
+      ok: false,
+      error: "This coupon is no longer valid because its purchase was refunded",
+    };
+  }
 
-  if (existingEnrollment) {
+  if (isEnrolled(userId, coupon.courseId)) {
     return { ok: false, error: "You are already enrolled in this course" };
   }
 
@@ -89,11 +76,7 @@ function redeemCoupon(
     .where(eq(coupons.id, coupon.id))
     .run();
 
-  const enrollment = db
-    .insert(enrollments)
-    .values({ userId, courseId: coupon.courseId })
-    .returning()
-    .get();
+  const enrollment = enroll(userId, coupon.courseId);
 
   return { ok: true, enrollment };
 }

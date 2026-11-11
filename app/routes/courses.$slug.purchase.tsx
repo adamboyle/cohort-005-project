@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { Route } from "./+types/courses.$slug.purchase";
 import { getCurrentUserId } from "~/lib/session";
+import { enroll } from "~/lib/enrollment.server";
 import { db } from "~/db";
 import {
   courses,
@@ -19,7 +20,7 @@ import {
   CourseStatus,
   TeamMemberRole,
 } from "~/db/schema";
-import { eq, and, or, sql } from "drizzle-orm";
+import { eq, and, or, sql, isNull } from "drizzle-orm";
 import crypto from "crypto";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -123,7 +124,11 @@ function findEnrollment(userId: number, courseId: number) {
     .select()
     .from(enrollments)
     .where(
-      and(eq(enrollments.userId, userId), eq(enrollments.courseId, courseId))
+      and(
+        eq(enrollments.userId, userId),
+        eq(enrollments.courseId, courseId),
+        isNull(enrollments.endedAt)
+      )
     )
     .get();
 }
@@ -136,7 +141,9 @@ function getEnrollmentCountForCourse(courseId: number) {
   const result = db
     .select({ count: sql<number>`count(*)` })
     .from(enrollments)
-    .where(eq(enrollments.courseId, courseId))
+    .where(
+      and(eq(enrollments.courseId, courseId), isNull(enrollments.endedAt))
+    )
     .get();
 
   return result?.count ?? 0;
@@ -164,11 +171,8 @@ function enrollUser(
     }
   }
 
-  const enrollment = db
-    .insert(enrollments)
-    .values({ userId, courseId })
-    .returning()
-    .get();
+  // Reopens an enrollment that a refund ended, so their progress comes back.
+  const enrollment = enroll(userId, courseId);
 
   if (sendEmail) {
     // Would send welcome email here
