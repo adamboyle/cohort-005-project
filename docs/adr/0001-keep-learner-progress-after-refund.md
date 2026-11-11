@@ -1,0 +1,3 @@
+# Keep a learner's progress when their Refund Request is approved
+
+Approving a Refund Request ends the learner's access to the course at the moment of approval, not when the Refund is issued, because a Failed Refund leaves the decision unchanged. Their enrollment is marked ended rather than deleted, and it reopens if they buy the course again. We don't delete their lesson progress, video watch history or quiz attempts. Instead they're hidden while the learner has no access and come back if they buy the course again. We chose this over deleting because deletion can't be undone, and because watch history is the evidence the Refund Window's two-hour limit is measured against. Wiping it would let a learner buy, watch, get refunded and buy again with a clean slate.
