@@ -1,0 +1,3 @@
+# Access ends when a Refund is Issued, not when it is approved
+
+A Learner keeps access to a course after an Admin approves their Refund Request, and only loses it once the Refund is Issued, meaning the money is confirmed as sent. We chose this over ending access at approval because until the money is back, the Learner hasn't actually been refunded, and cutting them off during a Pending or Failed Refund would leave them with neither the course nor their money. We keep Pending, Issued and Failed as distinct states even though Cadence has no payment provider yet, so that adding one later doesn't change the meaning of approval.
