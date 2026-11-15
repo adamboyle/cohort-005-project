@@ -45,7 +45,7 @@ A Purchase a Team Admin makes for others. It grants Seats, not a Place; the buye
 _Avoid_: Team purchase, Bulk purchase
 
 **Seat**:
-One place on a Team Licence that a Learner can claim to get a Place on the course.
+One spot on a Team Licence that a Learner can claim to get a Place on the course.
 _Avoid_: Coupon, Code, Voucher
 
 **Unclaimed Seat**:
