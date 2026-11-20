@@ -1,4 +1,10 @@
+---
+status: deprecated
+---
+
 # Look up a buyer's country with ip-api.com when the request does not carry one
+
+**Deprecated.** The lookup was removed: when the request carries no country, the buyer now pays full price, because no page should wait on a network call to price a course. Kept so the lookup is not proposed again without that reason.
 
 Purchasing-power prices depend on the buyer's country. Behind Cloudflare the request carries it in the `CF-IPCountry` header, but not every request comes through Cloudflare. When the header is missing, `resolveCountry` looks up the first `X-Forwarded-For` address on ip-api.com's free endpoint, and only falls back to full price if that lookup fails.
 
